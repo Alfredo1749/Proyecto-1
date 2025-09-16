@@ -52,3 +52,62 @@ class Profesor(Usuario):
     
     def ver_cursos(self): #Proyeccion de la funcion y o sino cumple 
         return self.cursos_asignados if self.cursos_asignados else "No tiene cursos asignados."
+    
+#16/09/25
+class Curso:
+    def __init__(self, nombre, codigo, profesor):
+        self.nombre = nombre
+        self.codigo = codigo
+        self.profesor = profesor
+        self.estudiantes = []    # NUEVO: registro de estudiantes
+        self.evaluaciones  = []  # NUEVO: registro de evaluaciones
+
+    def inscribir_estudiante(self, alumno):
+        if alumno not in self.estudiantes:  # Verifica si el alumno ya está inscrito
+            self.estudiantes.append(alumno)
+            alumno.inscribirse(self.nombre)
+            print(f"Alumno {alumno.get_nombre()} inscrito en {self.nombre}.")
+        else:
+            print(f"El alumno {alumno.get_nombre()} ya está inscrito en {self.nombre}.")
+
+    def crear_evaluacion(self, nombre_eval, tipo):
+        evaluacion = Evaluacion(nombre_eval, tipo)  # NUEVO: relación con Evaluación
+        self.evaluaciones.append(evaluacion)
+        print(f"Evaluación {nombre_eval} creada en el curso {self.nombre}.")
+        return evaluacion
+    
+    def listar_estudiantes(self):
+        # NUEVO: recorrer alumnos inscritos
+        return [alumno.get_nombre() for alumno in self.estudiantes]
+    
+    def listar_evaluaciones(self):
+        # NUEVO: recorrer evaluaciones del curso
+        return [eval.nombre for eval in self.evaluaciones]
+
+class Evaluacion: 
+    def __init__(self, nombre, tipo):
+        self.nombre = nombre
+        self.tipo = tipo
+        self.calificaciones = {}  # diccionario {alumno: nota}
+
+    def registrar_notas(self, alumno, nota):
+        self.calificaciones[alumno.get_nombre()] = nota  # Guardar nota del alumno
+        print(f"Nota registrada {alumno.get_nombre()} = {nota}")
+
+    def ver_calificaciones(self):
+        return self.calificaciones if self.calificaciones else "No hay calificaciones registradas."
+
+def generar_reporte(curso):
+    print(f"\n--- Reporte del curso {curso.nombre} ---")
+    for alumno in curso.estudiantes:
+        notas = []
+        for eval in curso.evaluaciones:
+            if alumno.get_nombre() in eval.calificaciones:
+                notas.append(eval.calificaciones[alumno.get_nombre()])
+        
+        if notas:
+            promedio = sum(notas)/len(notas)
+            estado = "Bajo" if promedio < 60 else "Aprobado"
+            print(f"{alumno.get_nombre()} -> Promedio {promedio:.2f} Estado -> {estado}")
+        else:
+            print(f"{alumno.get_nombre()} -> sin notas registradas")
