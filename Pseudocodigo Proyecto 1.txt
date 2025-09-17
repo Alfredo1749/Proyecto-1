@@ -1,0 +1,154 @@
+Proceso PlataformaEducativa
+    Definir opcion Como Entero
+    Definir cursos, usuarios, inscripciones, evaluaciones, calificaciones Como Lista
+
+    cursos <- []
+    usuarios <- []
+    inscripciones <- []
+    evaluaciones <- []
+    calificaciones <- []
+
+    Repetir
+        Limpiar Pantalla
+        Escribir "===== PLATAFORMA EDUCATIVA ====="
+        Escribir "1. Registrar Usuario"
+        Escribir "2. Crear Curso"
+        Escribir "3. Inscribir Estudiante en Curso"
+        Escribir "4. Crear Evaluación"
+        Escribir "5. Registrar Calificación"
+        Escribir "6. Consultas"
+        Escribir "7. Generar Reportes"
+        Escribir "0. Salir"
+        Leer opcion
+
+        Segun opcion Hacer
+            1:
+                Llamar RegistrarUsuario(usuarios)
+            2:
+                Llamar CrearCurso(cursos)
+            3:
+                Llamar InscribirEstudiante(inscripciones, usuarios, cursos)
+            4:
+                Llamar CrearEvaluacion(evaluaciones, cursos)
+            5:
+                Llamar RegistrarCalificacion(calificaciones, evaluaciones, usuarios)
+            6:
+                Llamar Consultas(cursos, usuarios, inscripciones, evaluaciones, calificaciones)
+            7:
+                Llamar GenerarReportes(calificaciones, usuarios)
+        FinSegun
+    Hasta Que opcion = 0
+FinProceso
+
+SubProceso RegistrarUsuario(usuarios)
+    Definir tipo, nombre, id Como Cadena
+    Escribir "Ingrese ID del usuario: "
+    Leer id
+    Escribir "Ingrese nombre del usuario: "
+    Leer nombre
+    Escribir "Tipo de usuario (E=Estudiante, I=Instructor): "
+    Leer tipo
+    Agregar (id, nombre, tipo) a usuarios
+    Escribir "Usuario registrado con exito."
+    Esperar Tecla
+FinSubProceso
+
+SubProceso CrearCurso(cursos)
+    Definir codigo, nombre, instructor Como Cadena
+    Escribir "Codigo del curso: "
+    Leer codigo
+    Escribir "Nombre del curso: "
+    Leer nombre
+    Escribir "Instructor asignado: "
+    Leer instructor
+    Agregar (codigo, nombre, instructor) a cursos
+    Escribir "Curso creado exitosamente."
+    Esperar Tecla
+FinSubProceso
+
+SubProceso InscribirEstudiante(inscripciones, usuarios, cursos)
+    Definir idEst, codigoCurso Como Cadena
+    Escribir "ID del estudiante: "
+    Leer idEst
+    Escribir "Codigo del curso: "
+    Leer codigoCurso
+    Agregar (idEst, codigoCurso) a inscripciones
+    Escribir "Estudiante inscrito correctamente."
+    Esperar Tecla
+FinSubProceso
+
+SubProceso CrearEvaluacion(evaluaciones, cursos)
+    Definir codigoCurso, titulo, tipo Como Cadena
+    Escribir "Codigo del curso: "
+    Leer codigoCurso
+    Escribir "Titulo de la evaluacion: "
+    Leer titulo
+    Escribir "Tipo (Examen/Tarea): "
+    Leer tipo
+    Agregar (codigoCurso, titulo, tipo) a evaluaciones
+    Escribir "Evaluacion creada."
+    Esperar Tecla
+FinSubProceso
+
+SubProceso RegistrarCalificacion(calificaciones, evaluaciones, usuarios)
+    Definir idEst, tituloEval Como Cadena
+    Definir nota Como Real
+    Escribir "ID del estudiante: "
+    Leer idEst
+    Escribir "Titulo de la evaluacion: "
+    Leer tituloEval
+    Escribir "Nota obtenida: "
+    Leer nota
+    Agregar (idEst, tituloEval, nota) a calificaciones
+    Escribir "Calificacion registrada."
+    Esperar Tecla
+FinSubProceso
+
+SubProceso Consultas(cursos, usuarios, inscripciones, evaluaciones, calificaciones)
+    Definir opcionC Como Entero
+    Escribir "1. Ver Cursos"
+    Escribir "2. Ver Estudiantes Inscritos"
+    Escribir "3. Ver Evaluaciones"
+    Escribir "4. Ver Calificaciones"
+    Leer opcionC
+
+    Segun opcionC Hacer
+        1:
+            Escribir "=== Lista de Cursos ==="
+            Mostrar cursos
+        2:
+            Escribir "=== Inscripciones ==="
+            Mostrar inscripciones
+        3:
+            Escribir "=== Evaluaciones ==="
+            Mostrar evaluaciones
+        4:
+            Escribir "=== Calificaciones ==="
+            Mostrar calificaciones
+    FinSegun
+    Esperar Tecla
+FinSubProceso
+
+SubProceso GenerarReportes(calificaciones, usuarios)
+    Escribir "=== Reporte de Promedios Bajos ==="
+    Para cada usuario en usuarios Hacer
+        Si usuario.tipo = "E" Entonces
+            Definir suma, cont Como Real
+            suma <- 0
+            cont <- 0
+            Para cada cal en calificaciones Hacer
+                Si cal.idEst = usuario.id Entonces
+                    suma <- suma + cal.nota
+                    cont <- cont + 1
+                FinSi
+            FinPara
+            Si cont > 0 Entonces
+                promedio <- suma / cont
+                Si promedio < 60 Entonces
+                    Escribir "Estudiante ", usuario.nombre, " tiene promedio bajo: ", promedio
+                FinSi
+            FinSi
+        FinSi
+    FinPara
+    Esperar Tecla
+FinSubProceso
