@@ -111,3 +111,20 @@ def generar_reporte(curso):
             print(f"{alumno.get_nombre()} -> Promedio {promedio:.2f} Estado -> {estado}")
         else:
             print(f"{alumno.get_nombre()} -> sin notas registradas")
+
+# Guardar registros en un archivo txt
+def guardar_registro(mensaje):
+    #Guarda mensajes en un archivo de texto para dejar constancia
+    try:
+        with open("registros.txt", "a", encoding="utf-8") as f:
+            f.write(mensaje + "\n")
+    except Exception as e:
+        print("Error al guardar registro:", e)
+
+# Uso de *args y **kwargs
+def mostrar_detalles(*args, **kwargs):
+    print("Detalles adicionales:")
+    for arg in args:
+        print("-", arg)
+    for clave, valor in kwargs.items():
+        print(f"{clave}: {valor}")
