@@ -62,6 +62,9 @@ class Curso:
         self.estudiantes = []    # registro de estudiantes
         self.evaluaciones  = []  # registro de evaluaciones
 
+    def __str__(self):
+        return self.nombre  # Ahora cuando se imprima solo muestra el nombre
+
     def inscribir_estudiante(self, alumno):
         if alumno not in self.estudiantes:  # Verifica si el alumno ya está inscrito
             self.estudiantes.append(alumno)
@@ -88,6 +91,9 @@ class Evaluacion:
         self.nombre = nombre
         self.tipo = tipo
         self.calificaciones = {}  # diccionario {alumno: nota}
+
+    def __str__(self):
+        return self.nombre  # Igual, solo muestra el nombre al imprimir
 
     def registrar_notas(self, alumno, nota):
         self.calificaciones[alumno.get_nombre()] = nota
@@ -147,6 +153,36 @@ def ver_notas_estudiante(curso, alumno):
         print(f"{eval.nombre} ({eval.tipo}): {nota}")
 
 
+# Función auxiliar para elegir elementos
+def seleccionar(lista, tipo):
+    """Función auxiliar para seleccionar elementos de una lista"""
+    if not lista:
+        print(f"No hay {tipo} registrados.")
+        return None
+    print(f"\n--- {tipo.upper()} DISPONIBLES ---")
+    for i, item in enumerate(lista):
+        if hasattr(item, "get_nombre"):  # alumnos o profesores
+            print(f"{i+1}. {item.get_nombre()}")
+        elif isinstance(item, Curso):  # cursos
+            print(f"{i+1}. {item}")  # gracias al __str__ solo muestra el nombre
+        elif isinstance(item, Evaluacion):  # evaluaciones
+            print(f"{i+1}. {item}")  # gracias al __str__ solo muestra el nombre
+        elif isinstance(item, dict):  # en caso de diccionarios
+            print(f"{i+1}. {item['nombre']}")
+        else:
+            print(f"{i+1}. {item}")
+    try:
+        indice = int(input(f"Selecciona un {tipo} (1-{len(lista)}): ")) - 1
+        if 0 <= indice < len(lista):
+            return lista[indice]
+        else:
+            print("Selección inválida.")
+            return None
+    except ValueError:
+        print("Debes ingresar un número.")
+        return None
+
+
 def menu():
     profesores = []
     alumnos = []
@@ -184,57 +220,56 @@ def menu():
                 if not profesores:
                     print("No hay profesores registrados.")
                     continue
+                profesor = seleccionar(profesores, "profesor")
+                if not profesor:
+                    continue
                 nombre_curso = input("Nombre del curso: ")
                 codigo = input("Código del curso: ")
-                profesor = profesores[0]  # simplificado
                 curso = Curso(nombre_curso, codigo, profesor)
                 cursos.append(curso)
                 guardar_registro(f"Curso creado: {nombre_curso}")
             
             elif opcion == "4":
-                if not cursos or not alumnos:
-                    print("Debes registrar cursos y alumnos primero.")
-                    continue
-                curso = cursos[0]  # simplificado
-                alumno = alumnos[0]
-                curso.inscribir_estudiante(alumno)
-                guardar_registro(f"Alumno {alumno.get_nombre()} inscrito en {curso.nombre}")
+                curso = seleccionar(cursos, "curso")
+                alumno = seleccionar(alumnos, "alumno")
+                if curso and alumno:
+                    curso.inscribir_estudiante(alumno)
+                    guardar_registro(f"Alumno {alumno.get_nombre()} inscrito en {curso.nombre}")
             
             elif opcion == "5":
-                if not cursos:
-                    print("No hay cursos disponibles.")
+                curso = seleccionar(cursos, "curso")
+                if not curso:
                     continue
-                curso = cursos[0]
                 nombre_eval = input("Nombre de la evaluación: ")
                 tipo = input("Tipo (examen/tarea): ")
                 curso.crear_evaluacion(nombre_eval, tipo)
                 guardar_registro(f"Evaluación {nombre_eval} creada en {curso.nombre}")
             
             elif opcion == "6":
-                if not cursos:
-                    print("No hay cursos.")
-                    continue
-                curso = cursos[0]
-                if not curso.evaluaciones or not curso.estudiantes:
+                curso = seleccionar(cursos, "curso")
+                if not curso or not curso.evaluaciones or not curso.estudiantes:
                     print("Faltan evaluaciones o estudiantes.")
                     continue
-                eval = curso.evaluaciones[0]
-                alumno = curso.estudiantes[0]
-                nota = float(input("Ingrese nota: "))
-                eval.registrar_notas(alumno, nota)
-                guardar_registro(f"Nota {nota} registrada para {alumno.get_nombre()} en {curso.nombre}")
+                eval = seleccionar(curso.evaluaciones, "evaluación")
+                alumno = seleccionar(curso.estudiantes, "alumno")
+                if eval and alumno:
+                    nota = float(input("Ingrese nota: "))
+                    eval.registrar_notas(alumno, nota)
+                    guardar_registro(f"Nota {nota} registrada para {alumno.get_nombre()} en {curso.nombre}")
 
             elif opcion == "7":
-                if not cursos:
-                    print("No hay cursos.")
-                    continue
-                generar_reporte(cursos[0])
+                curso = seleccionar(cursos, "curso")
+                if curso:
+                    generar_reporte(curso)
             
             elif opcion == "8":
-                if not cursos:
-                    print("No hay cursos.")
+                curso = seleccionar(cursos, "curso")
+                if not curso or not curso.estudiantes:
+                    print("No hay cursos o estudiantes en este curso.")
                     continue
-                ver_notas_estudiante(cursos[0], cursos[0].estudiantes[0])
+                alumno = seleccionar(curso.estudiantes, "alumno")
+                if alumno:
+                    ver_notas_estudiante(curso, alumno)
             
             elif opcion == "9":
                 print("Saliendo del sistema...")
@@ -248,5 +283,3 @@ def menu():
 
 if __name__ == "__main__":
     menu()
-
-
