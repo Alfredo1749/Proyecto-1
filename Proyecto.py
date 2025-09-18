@@ -5,10 +5,9 @@
 #Definir un bucle while para integrar un menú
 
 class Usuario:
-    def _init_(self, id_usuario, nombre):
+    def __init__(self, id_usuario, nombre):
         self.__id_usuario = id_usuario   #Atributo privado
         self.__nombre = nombre
-    
     
     def get_id(self): # Fundion get para acceder al atributo
         return self.__id_usuario
@@ -17,15 +16,15 @@ class Usuario:
         return self.__nombre
     
     def mostrar_info(self):#Implemnentacion del primer metodo de usuario
-        return f"Usuario: {self._nombre} (ID: {self._id_usuario})"
+        return f"Usuario: {self.__nombre} (ID: {self.__id_usuario})"
     
-    def _del_(self):
+    def __del__(self):
         print(f"Usuario {self.__nombre} eliminado del sistema.")#Destructor si se necesita
 
 
 class Alumno(Usuario):
-    def _init_(self, id_usuario, nombre):
-        super()._init_(id_usuario, nombre)
+    def __init__(self, id_usuario, nombre):
+        super().__init__(id_usuario, nombre)
         self.cursos = []  #Definicion de lista para los cursos 
     
     def inscribirse(self, curso): #Inscripciones para alumnos
@@ -40,8 +39,8 @@ class Alumno(Usuario):
 
 
 class Profesor(Usuario):
-    def _init_(self, id_usuario, nombre):
-        super()._init_(id_usuario, nombre)
+    def __init__(self, id_usuario, nombre):
+        super().__init__(id_usuario, nombre)
         self.cursos_asignados = []  #Lista de cursos a impartir
     
     def crear_curso(self, nombre_curso, codigo): #Primera funcion
@@ -53,6 +52,7 @@ class Profesor(Usuario):
     def ver_cursos(self): #Proyeccion de la funcion y o sino cumple 
         return self.cursos_asignados if self.cursos_asignados else "No tiene cursos asignados."
     
+
 #16/09/25
 class Curso:
     def __init__(self, nombre, codigo, profesor):
@@ -84,6 +84,7 @@ class Curso:
         # NUEVO: recorrer evaluaciones del curso
         return [eval.nombre for eval in self.evaluaciones]
 
+
 class Evaluacion: 
     def __init__(self, nombre, tipo):
         self.nombre = nombre
@@ -96,6 +97,7 @@ class Evaluacion:
 
     def ver_calificaciones(self):
         return self.calificaciones if self.calificaciones else "No hay calificaciones registradas."
+
 
 def generar_reporte(curso):
     print(f"\n--- Reporte del curso {curso.nombre} ---")
@@ -112,19 +114,153 @@ def generar_reporte(curso):
         else:
             print(f"{alumno.get_nombre()} -> sin notas registradas")
 
+
+# ================================
+# INICIO DE LO NUEVO
+# ================================
+
 # Guardar registros en un archivo txt
 def guardar_registro(mensaje):
-    #Guarda mensajes en un archivo de texto para dejar constancia
+    """Guarda mensajes en un archivo de texto para dejar constancia"""
     try:
         with open("registros.txt", "a", encoding="utf-8") as f:
             f.write(mensaje + "\n")
     except Exception as e:
         print("Error al guardar registro:", e)
 
+
 # Uso de *args y **kwargs
 def mostrar_detalles(*args, **kwargs):
+    """Ejemplo de uso de argumentos variables"""
     print("Detalles adicionales:")
     for arg in args:
         print("-", arg)
     for clave, valor in kwargs.items():
         print(f"{clave}: {valor}")
+
+
+# Función extra: buscar cursos por nombre
+def buscar_curso(cursos, nombre):
+    """Busca cursos por nombre"""
+    for curso in cursos:
+        if curso.nombre.lower() == nombre.lower():
+            return curso
+    return None
+
+
+# Función extra: ver notas de un estudiante en un curso
+def ver_notas_estudiante(curso, alumno):
+    """Muestra las notas de un alumno específico en un curso"""
+    print(f"\nNotas de {alumno.get_nombre()} en {curso.nombre}:")
+    for eval in curso.evaluaciones:
+        nota = eval.calificaciones.get(alumno.get_nombre(), "Sin nota")
+        print(f"{eval.nombre} ({eval.tipo}): {nota}")
+
+
+# ================================
+# Menú principal con bucle while
+# ================================
+def menu():
+    profesores = []
+    alumnos = []
+    cursos = []
+
+    while True:
+        print("\n--- MENÚ PRINCIPAL ---")
+        print("1. Registrar Alumno")
+        print("2. Registrar Profesor")
+        print("3. Crear Curso")
+        print("4. Inscribir Alumno en Curso")
+        print("5. Crear Evaluación en Curso")
+        print("6. Registrar Nota")
+        print("7. Generar Reporte")
+        print("8. Ver Notas de Alumno")
+        print("9. Salir")
+
+        opcion = input("Elige una opción: ")
+        try:
+            if opcion == "1":
+                id_a = input("ID Alumno: ")
+                nombre_a = input("Nombre Alumno: ")
+                alumno = Alumno(id_a, nombre_a)
+                alumnos.append(alumno)
+                guardar_registro(f"Alumno registrado: {nombre_a}")
+            
+            elif opcion == "2":
+                id_p = input("ID Profesor: ")
+                nombre_p = input("Nombre Profesor: ")
+                profesor = Profesor(id_p, nombre_p)
+                profesores.append(profesor)
+                guardar_registro(f"Profesor registrado: {nombre_p}")
+
+            elif opcion == "3":
+                if not profesores:
+                    print("No hay profesores registrados.")
+                    continue
+                nombre_curso = input("Nombre del curso: ")
+                codigo = input("Código del curso: ")
+                profesor = profesores[0]  # simplificado, siempre primer profesor
+                curso = Curso(nombre_curso, codigo, profesor)
+                cursos.append(curso)
+                guardar_registro(f"Curso creado: {nombre_curso}")
+            
+            elif opcion == "4":
+                if not cursos or not alumnos:
+                    print("Debes registrar cursos y alumnos primero.")
+                    continue
+                curso = cursos[0]  # simplificado
+                alumno = alumnos[0]
+                curso.inscribir_estudiante(alumno)
+                guardar_registro(f"Alumno {alumno.get_nombre()} inscrito en {curso.nombre}")
+            
+            elif opcion == "5":
+                if not cursos:
+                    print("No hay cursos disponibles.")
+                    continue
+                curso = cursos[0]
+                nombre_eval = input("Nombre de la evaluación: ")
+                tipo = input("Tipo (examen/tarea): ")
+                curso.crear_evaluacion(nombre_eval, tipo)
+                guardar_registro(f"Evaluación {nombre_eval} creada en {curso.nombre}")
+            
+            elif opcion == "6":
+                if not cursos:
+                    print("No hay cursos.")
+                    continue
+                curso = cursos[0]
+                if not curso.evaluaciones or not curso.estudiantes:
+                    print("Faltan evaluaciones o estudiantes.")
+                    continue
+                eval = curso.evaluaciones[0]
+                alumno = curso.estudiantes[0]
+                nota = float(input("Ingrese nota: "))
+                eval.registrar_notas(alumno, nota)
+                guardar_registro(f"Nota {nota} registrada para {alumno.get_nombre()} en {curso.nombre}")
+
+            elif opcion == "7":
+                if not cursos:
+                    print("No hay cursos.")
+                    continue
+                generar_reporte(cursos[0])
+            
+            elif opcion == "8":
+                if not cursos:
+                    print("No hay cursos.")
+                    continue
+                ver_notas_estudiante(cursos[0], cursos[0].estudiantes[0])
+            
+            elif opcion == "9":
+                print("Saliendo del sistema...")
+                break
+            else:
+                print("Opción inválida")
+
+        except Exception as e:
+            print("Error:", e)
+
+
+# ================================
+# Ejecutar el programa
+# ================================
+if __name__ == "__main__":
+    menu()
